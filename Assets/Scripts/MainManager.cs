@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -11,17 +10,20 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text BestScore;
     public GameObject GameOverText;
     
     private bool m_Started = false;
     private int m_Points;
     
     private bool m_GameOver = false;
-
+    private GameManager gameManager;
     
     // Start is called before the first frame update
     void Start()
     {
+        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+        ShowBestScore();
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -55,6 +57,7 @@ public class MainManager : MonoBehaviour
         }
         else if (m_GameOver)
         {
+            
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
@@ -72,5 +75,16 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        gameManager.SaveRecord(m_Points);
+    }
+
+    private void ShowBestScore()
+    {
+        if (gameManager.records.Count > 0) 
+        {
+            KeyValuePair<string, int> record = gameManager.GetScore();
+            BestScore.text = $"Record {record.Key}: {record.Value}";
+        }
+        
     }
 }
