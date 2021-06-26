@@ -8,17 +8,16 @@ public class MainManager : MonoBehaviour
     public Brick BrickPrefab;
     public int LineCount = 6;
     public Rigidbody Ball;
-
     public Text ScoreText;
     public Text BestScore;
     public GameObject GameOverText;
-    
     private bool m_Started = false;
-    private int m_Points;
-    
+    private int m_Points = 0;
     private bool m_GameOver = false;
     private GameManager gameManager;
+    [SerializeField] private AudioSource audioPlayer;
     
+  
     // Start is called before the first frame update
     void Start()
     {
@@ -32,12 +31,14 @@ public class MainManager : MonoBehaviour
         {
             for (int x = 0; x < perLine; ++x)
             {
-                Vector3 position = new Vector3(-1.5f + step * x, 2.5f + i * 0.3f, 0);
+                Vector3 position = new Vector3(-1.5f + step * x, 2.5f + i * 0.3f, 0); 
                 var brick = Instantiate(BrickPrefab, position, Quaternion.identity);
                 brick.PointValue = pointCountArray[i];
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+        
+        audioPlayer.Play();
     }
 
     private void Update()
@@ -53,7 +54,9 @@ public class MainManager : MonoBehaviour
 
                 Ball.transform.SetParent(null);
                 Ball.AddForce(forceDir * 2.0f, ForceMode.VelocityChange);
+
             }
+            
         }
         else if (m_GameOver)
         {
@@ -62,7 +65,18 @@ public class MainManager : MonoBehaviour
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
+            else if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                SceneManager.LoadScene("start_menu");
+            }
         }
+
+        if (GetNumberBricks() == 0) GameOver();
+    }
+
+    private int GetNumberBricks()
+    {
+        return GameObject.FindGameObjectsWithTag("Brick").Length;
     }
 
     void AddPoint(int point)
@@ -80,11 +94,11 @@ public class MainManager : MonoBehaviour
 
     private void ShowBestScore()
     {
-        if (gameManager.records.Count > 0) 
+        if (gameManager.records.records.Count > 0) 
         {
             KeyValuePair<string, int> record = gameManager.GetScore();
             BestScore.text = $"Record {record.Key}: {record.Value}";
         }
-        
     }
+
 }
